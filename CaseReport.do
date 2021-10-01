@@ -47,6 +47,7 @@ c) Calculate the daily unconditional Value-at-Risk (VaR) for the equally-weighte
 global wd "/Users/ts/Library/Mobile Documents/com~apple~CloudDocs/Uni/UM/Year 2/Macro and Finance/Empirical Case"
 
 cd "${wd}"
+
 *create duplicate of raw data
 copy "bankstocks.xlsx" "bankstocks_workingdata.xlsx", replace
 *import raw data
@@ -99,15 +100,19 @@ local grtitle = "Bank stock prices"
 tw tsline BNY Citi BofA, nodraw ///
 title(`grtitle', color(black) span) ///
 	lcolor(%60 %60 %60)
-	gr save "stockprices.tex"
+	gr save "stockprices.tex", replace
 
 local grtitle = "Bank stock prices"
 tw tsline BNY_log Citi_log BofA_log, nodraw ///
 	title(`grtitle', color(black) span) ///
 	lcolor(%60 %60 %60)
-	gr save "logstockprices.tex"
+	gr save "logstockprices.tex", replace
 	
 * a(i) Assume that the returns are normally distributed.
 
 *get sumstats
 sum Citi_log
+
+
+****END
+translate "CaseReport.do" "Dofile.pdf", t(txt2pdf) replace
