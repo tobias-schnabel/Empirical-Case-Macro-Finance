@@ -83,9 +83,6 @@ foreach x in BNY Citi BofA SP500 {
 	replace `x'_log=ln(`x'/L.`x')
 }
 
-*label new log vars
-
-
 *show codebook
 codebook
 
