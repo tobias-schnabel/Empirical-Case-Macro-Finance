@@ -67,7 +67,6 @@ ren Citigroup Citi
 
 *declare Data as Time Series
 tsset Date
-tsreport
 
 *drop excel artifact "variables"
 drop C D F H I
@@ -84,13 +83,15 @@ foreach x in BNY Citi BofA SP500 {
 	replace `x'_log=ln(`x'/L.`x')
 }
 
-*show codebook
+*show codebook and times series report
 codebook
+tsreport
 
 *export codebook
 quietly {
-    log using codebook.txt, text replace
+    log using tsreport+codebook.txt, text replace
     noisily codebook
+	noisily tsreport
     log close
 }
 
