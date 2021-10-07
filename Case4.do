@@ -66,6 +66,7 @@ foreach x in bny citi bofa SP500 {
 *generate Portfolio Price variable for part bb
 gen portf_price = 1/3*bny + 1/3*citi + 1/3*bofa
 gen portf_return = ln(portf_price/L.portf_price)
+gen portf_loss = -portf_return
 
 *export codebook and time series status report
 quietly {
@@ -92,13 +93,43 @@ gen index = _n
 
 *gen var with 150 biggest losses
 gen citi_log_loss_150 = citi_log_loss if index <151
+
 *gen scalar with 151st biggest value
 gen citi_l_l_151 = citi_log_loss if index == 151
 qui sum citi_l_l_151, meanonly
 sca x151 = `r(mean)'
 di x151
 drop citi_l_l_151
-sca drop `r(mean)'
+
+
+***EQ 21
+*gen sum150 = sum(ln(citi_log_loss_150/x151)), after(citi_log_loss)
+gen sum_arg = ln(citi_log_loss_150/x151), after(citi_log_loss)
+egen sum_total = total(sum_arg)
+qui sum sum_total, meanonly
+sca alphainv = 1/150* `r(mean)'
+sca alpha_hat = 1/alphainv
+dis alpha_hat
+
+***EQ 22
+qui sum index
+sca c_hat = 150/`r(N)' * x151^alpha_hat
+
+sca u = 0.25
+sca paretoprob = c_hat * (u ^-alpha_hat)
+di paretoprob
+**EQ 23
+sca VaR_0_25 = x151 * (150/`r(N)'*0.25)^alphainv
+di VaR_0_25
+
+***STILL TO DO: COMPARE MAGNITUDES OF LIKELIHOODS
+
+****************
+*******c********
+****************
+*sca I = 1000000/VaR_0_25
+sort portf_return
+
 
 
 /*
