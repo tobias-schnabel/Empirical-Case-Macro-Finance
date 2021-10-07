@@ -3,7 +3,7 @@ version 17
 set more off
 cap log close
 
-
+cls
 /*!!requires following packages: 
 
 net install cleanplots, from("https://tdmize.github.io/data/cleanplots")
@@ -79,13 +79,13 @@ local grtitle = "Bank stock prices"
 tw tsline BNY Citi BofA, nodraw ///
 title(`grtitle', color(black) span) ///
 	lcolor(%60 %60 %60)
-	gr save "stockprices.tex", replace
+	gr save "stockprices.png", replace
 
-local grtitle = "Log Bank stock prices"
+local grtitle = "Log Bank stock returns"
 tw tsline BNY_log_return Citi_log_return BofA_log_return, nodraw ///
 	title(`grtitle', color(black) span) ///
 	lcolor(%60 %60 %60)
-	gr save "logstockprices.tex", replace
+	gr save "logstockprices.png", replace
 	
 *sort data by loss high to low (right tail of loss=left tail of return)
 sort Citi_log_return //sort sorts low-high
@@ -102,6 +102,8 @@ sum Citi_log_loss
 
 dis `r(mean)'
 dis `r(Var)'
+
+dis (normalden(Citi_log_loss==0.25, `r(mean)', `r(Var)')- normalden(Citi_log_loss==`r(min)', `r(mean)', `r(Var)'))
 
 dis (normalden(Citi_log_loss==0.25, `r(mean)', `r(Var)')- normalden(Citi_log_loss==0, `r(mean)', `r(Var)'))
 
