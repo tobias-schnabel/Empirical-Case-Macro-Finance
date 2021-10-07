@@ -55,6 +55,7 @@ des
 
 *create log return vars
 foreach x in BNY Citi BofA SP500 {
+	*clonevar `x'_loss = -`x'
 	clonevar `x'_log_return = `x'
 	order `x'_log_return, after(`x')
 	replace `x'_log_return=ln(`x'/L.`x')
@@ -87,9 +88,15 @@ tw tsline BNY_log_return Citi_log_return BofA_log_return, nodraw ///
 	lcolor(%60 %60 %60)
 	gr save "logstockprices.png", replace
 	
+////////for part b
+*create variable that contains NON-LOG RETURNS
+gen citi_return = (Citi-L.Citi/L.Citi)
+gen citi_loss = - citi_return
+//////////
+	
 *sort data by loss high to low (right tail of loss=left tail of return)
 sort Citi_log_return //sort sorts low-high
-gen index = _n
+gen index1 = _n
 
 ****************
 *****part a*****
@@ -109,7 +116,9 @@ dis `r(Var)'
 **ALTERNATIVE: STANDARDIZE LOSS VAR
 clonevar Citi_log_loss_std = Citi_log_loss
 replace Citi_log_loss_std = (Citi_log_loss-`r(mean)'/`r(Var)')
-sca a1 = normalden(Citi_log_loss_std==0.25, 0, 1)
+qui sum Citi_log_loss
+sca a1 = (normalden(Citi_log_loss_std==0.25, 0, 1) - ///
+normalden(Citi_log_loss_std==`r(min)', 0, 1))
 dis a1
 dis normal(0.25) //check N(0,1) value for comparison
 
@@ -119,28 +128,33 @@ collect get r(), name(a)
 
 /*(ii) Assume that the stock returns are fat tailed like in eq. (1) of the academic paper above. Estimate the parameters C (the scaling constant) and α (the tail index) with the estimators (21) and (22). Select the number of extremes to be used in estimation to be equal to k=150. Attention: use the left tail data! */
 
+
+
+****SORT HIGH TO LOW ON ABSOLUTE LOSS NOT LOG
+sort citi_return
+gen index2 = _n
+
 *create var that holds only 151 biggest (tail) observations
-clonevar c_l_l_tail = Citi_log_loss
-replace c_l_l_tail =. if index > 151
-list c_l_l_tail in 150/151
+clonevar c_loss_tail = citi_loss
+replace c_loss_tail =. if index2 > 151
+list c_loss_tail in 150/151
 
-*create var that holds only 300 biggest (tail) observations
-clonevar c_l_l_tail2 = Citi_log_loss
-replace c_l_l_tail2 =. if index > 300
-
+*create var that holds only 150 biggest (tail) observations
+clonevar c_loss_150 = c_loss_tail
+replace c_loss_150 =. if index2 > 150
 
 *create var that only holds 151st  value
-clonevar c_l_l_151 = Citi_log_loss
-replace c_l_l_151 =. if index != 151
+clonevar c_loss_151 = c_loss_tail
+replace c_loss_151 =. if index2 != 151
 *convert to scalar
-qui sum c_l_l_151
+qui sum c_loss_151
 sca x151 = `r(min)'
 
 
-qui sum index
+qui sum index2
 sca  obs = `r(N)' //number of observations n
 *equation 21
-sca alphainv= 1/150*(sum(Citi_log_loss/.0497235)) //this is equation (21) in the paper
+sca alphainv = (1/150*(sum(ln(c_loss_150/x151)))) //this is equation (21) in the paper
 *inverse of alphainv is alpha
 sca alpha_hat = 1/alphainv
 *equation 22
@@ -148,12 +162,17 @@ sca  C_hat = 150/obs * (x151^alpha_hat)
 
 
 *******estimate likelihood given that Citi_log_loss is Pareto-distributed
-sca pareto_ll = 1- (0.25 / C_hat) ^(-alpha_hat)
-dis pareto_ll
+**BY EQUATIONS 1, 21, 22 and 23:
+sca pareto_pdf_25= (alpha_hat*(C_hat^alpha_hat))/(0.25^(alpha_hat+1))
+*gen VaR_pareto = 
 
+/*
 ******COMPARISON WITH ML-FITTED PARETO DISTRIBUTION: 
-paretofit c_l_l_tail2, stats cdf(paretocdf) pdf(paretopdf)
-sum paretopdf if Citi_log_loss>0.2495 & paretopdf<0.2505
+gen cret_log = -ln(citi_return)
+gen c_l_l_tail = cret_log if index2 < 151
+paretofit c_l_l_tail, stats cdf(paretocdf) pdf(paretopdf)
+sum paretopdf if Citi_log_loss>0.249999999 & paretopdf<0.250000001
+*/
 **export the estimated values to table
 
 collect get r(), name(a)
