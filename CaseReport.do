@@ -89,6 +89,7 @@ tw tsline BNY_log_return Citi_log_return BofA_log_return, nodraw ///
 	
 *sort data by loss high to low (right tail of loss=left tail of return)
 sort Citi_log_return //sort sorts low-high
+gen index = _n
 
 ****************
 *****part a*****
@@ -112,6 +113,21 @@ dis normalden(Citi_log_loss_std==0.25, 0, 1)
 dis normal(0.25) //check N(0,1) value for comparison
 
 /*(ii) Assume that the stock returns are fat tailed like in eq. (1) of the academic paper above. Estimate the parameters C (the scaling constant) and α (the tail index) with the estimators (21) and (22). Select the number of extremes to be used in estimation to be equal to k=150. Attention: use the left tail data! */
+
+clonevar c_l_l_tail = Citi_log_loss
+qui sum c_l_l_tail
+replace c_l_l_tail =. if index > 151
+list c_l_l_tail in 150/151
+
+qui sum index
+sca  obs = `r(N)'
+
+sca alphainv= 1/150*(sum(Citi_log_loss/.0497235))
+sca alpha_hat = 1/alphainv
+
+
+sca  c_hat = 150/9747 * (0.0497235^alpha_hat)
+
 
 
 ****END
