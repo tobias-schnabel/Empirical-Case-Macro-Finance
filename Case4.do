@@ -82,8 +82,11 @@ quietly {
 qui sum citi_log_return
 *gen standardized var
 gen citi_log_ret_std = ((citi_log_return-`r(mean)')/`r(sd)')
-sca normprob = normalden(citi_log_ret_std==-0.25)
-dis normprob
+qui sum citi_log_ret_std
+sca normprob = normalden(citi_log_ret_std<=-0.25,0,1) - normalden(citi_log_ret_std==`r(min)')
+dis %20.0e normprob
+
+
 
 /*
 
