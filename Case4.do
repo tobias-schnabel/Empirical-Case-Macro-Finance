@@ -129,7 +129,41 @@ di VaR_0_25
 ****************
 *sca I = 1000000/VaR_0_25
 sort portf_return
+gen index2 = _n
 
+*gen var with 150 biggest losses
+gen portf_loss_150 = portf_loss if index2 <151
+
+*gen scalar with 151st biggest value
+gen portf_l_151 = portf_loss if index2 == 151
+qui sum portf_l_151, meanonly
+sca x151new = `r(mean)'
+di x151new
+drop portf_l_151
+
+
+***EQ 21
+*gen sum150 = sum(ln(portf_loss_150/x151)), after(port_loss)
+gen sum_arg_portf = ln(portf_loss_150/x151new), after(portf_loss)
+egen sum_total_portf = total(sum_arg)
+qui sum sum_total_portf, meanonly
+sca alphainv_portf = 1/150* `r(mean)'
+sca alpha_hat_portf = 1/alphainv
+dis alpha_hat_portf
+
+/*
+***EQ 22
+qui sum index2
+sca c_hat_portf = 150/`r(N)' * x151new^alpha_hat
+
+sca u = 0.001
+sca paretoprob_portf = c_hat * (u ^-alpha_hat)
+di paretoprob_portf
+*/
+**EQ 23
+sca VaR_portf = x151 * (150/`r(N)'*0.001)^alphainv
+di VaR_portf
+di %20.3f 1000000/VaR_portf
 
 
 /*
