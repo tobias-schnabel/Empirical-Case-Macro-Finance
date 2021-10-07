@@ -86,6 +86,19 @@ qui sum citi_log_ret_std
 sca normprob = normalden(citi_log_ret_std<=-0.25,0,1) - normalden(citi_log_ret_std==`r(min)')
 dis %20.0e normprob
 
+**a(ii)
+sort citi_log_return //low to high so loss var is sorted high to low now
+gen index = _n
+
+*gen var with 150 biggest losses
+gen citi_log_loss_150 = citi_log_loss if index <151
+*gen scalar with 151st biggest value
+gen citi_l_l_151 = citi_log_loss if index == 151
+qui sum citi_l_l_151, meanonly
+sca x151 = `r(mean)'
+di x151
+drop citi_l_l_151
+sca drop `r(mean)'
 
 
 /*
