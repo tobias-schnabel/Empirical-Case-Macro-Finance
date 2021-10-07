@@ -103,15 +103,13 @@ sum Citi_log_loss
 dis `r(mean)'
 dis `r(Var)'
 
-dis (normalden(Citi_log_loss==0.25, `r(mean)', `r(Var)')- normalden(Citi_log_loss==`r(min)', `r(mean)', `r(Var)'))
 
-dis (normalden(Citi_log_loss==0.25, `r(mean)', `r(Var)')- normalden(Citi_log_loss==0, `r(mean)', `r(Var)'))
 
 **ALTERNATIVE: STANDARDIZE LOSS VAR
 clonevar Citi_log_loss_std = Citi_log_loss
 replace Citi_log_loss_std = (Citi_log_loss-`r(mean)'/`r(Var)')
-dis normal(Citi_log_loss_std==0.25)
-dis normal(0.25)
+dis normalden(Citi_log_loss_std==0.25, 0, 1)
+dis normal(0.25) //check N(0,1) value for comparison
 
 /*(ii) Assume that the stock returns are fat tailed like in eq. (1) of the academic paper above. Estimate the parameters C (the scaling constant) and α (the tail index) with the estimators (21) and (22). Select the number of extremes to be used in estimation to be equal to k=150. Attention: use the left tail data! */
 
