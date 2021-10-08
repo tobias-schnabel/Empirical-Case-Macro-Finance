@@ -3,6 +3,8 @@ version 17
 set more off
 cap log close
 
+graph set eps fontface "Latin Modern Roman"
+
 cls
 /*!!requires following packages: 
 
@@ -42,7 +44,7 @@ ren Date date
 ren BankofNewYorkMellon bny
 ren BankofAmerica bofa
 ren Citigroup citi
-
+la var bny "Bank of NY Mellon"
 *declare Data as Time Series
 tsset date
 
@@ -69,6 +71,8 @@ foreach x in bny citi bofa SP500 {
 gen portf_price = 1/3*bny + 1/3*citi + 1/3*bofa
 gen portf_return = ln(portf_price/L.portf_price)
 gen portf_loss = -portf_return
+
+la var portf_return "Portfolio Return"
 
 *export codebook and time series status report
 quietly {
@@ -247,7 +251,7 @@ tw tsline bny citi bofa,  ///
 title(, color(black) size(medlarge) span ) ///
 	lcolor(%60 %60 %60) ytitle("Share Price in USD", ///
 	orientation(vertical) angle(-90) size(medium)) ///
-	legend(position(6))
+	legend(position(6) symplacement(s)) graphregion(margin(1 5 1 1))
 	
 	gr export "stockprices.png", replace
 	gr close
@@ -257,9 +261,57 @@ tw tsline bny_log_return citi_log_return bofa_log_return,  ///
 	title(, color(black) size(medlarge) span ) ///
 	lcolor(%60 %60 %60) ytitle("Logarithmic Returns", ///
 	orientation(vertical) angle(-90) size(medium)) ///
-	legend(position(6))
+	legend(position(6)  symplacement(s)) graphregion(margin(1 5 1 1))
+	
 	gr export "logstockreturn.png", replace
 	gr close
+	
+local grtitle = "Log Portfolio returns"
+tw tsline portf_return SP500_log_return,  ///
+	title(, color(black) size(medlarge) span ) ///
+	lcolor(%60 %60 %60) ytitle("Logarithmic Returns", ///
+	orientation(vertical) angle(-90) size(medium)) ///
+	legend(position(6) symplacement(s) label(1 "Portolio Return")) ///
+	graphregion(margin(1 5 1 1))
+	
+	gr export "logportfreturn.png", replace
+	gr close
+
+***Build and combine 4 graphs of correlations
+tw scat portf_return SP500_log_return, nodraw ///
+	graphregion(margin(1 1 1 1)) name(gr4, replace) ///
+	mcolor(%60) ytitle(, j(center) alignment(middle) ///
+	orientation(vertical) angle(-90) size(medium) ) ///
+	yscale(titlegap(*-24))
+	
+tw scat bny_log_return bofa_log_return, nodraw ///
+	graphregion(margin(1 1 1 1)) name(gr1, replace) ///
+	mcolor(%60) ytitle(, j(center) alignment(middle) ///
+	orientation(vertical) angle(-90) size(medium)) ///
+	yscale(titlegap(*-5))
+	
+tw scat  bny_log_return citi_log_return, nodraw ///
+	graphregion(margin(1 1 1 1)) name(gr2, replace) ///
+	mcolor(%60) ytitle(, j(center) alignment(middle) ///
+	orientation(vertical) angle(-90) size(medium)) ///
+	yscale(titlegap(*-5))
+	
+tw scat  citi_log_return bofa_log_return , nodraw ///
+	graphregion(margin(1 1 1 1)) name(gr3, replace) ///
+	mcolor(%60) ytitle(, j(center) alignment(middle) ///
+	orientation(vertical) angle(-90) size(medium)) ///
+	yscale(titlegap(*-32))
+	
+gr combine gr1 gr2 gr3 gr4,  ///
+	rows(2) title(, color(black) nobox fcolor() ) subtitle(, nobox) ///
+	caption(, nobox)  name(corrs, replace) 
+	
+	 altshrink ///
+	graphregion(margin(zero) fcolor(white) ///
+	lcolor(white%0) lpattern(blank) ifcolor(white) ilcolor(white%0) ///
+	ilpattern(blank)) 
+	
+	*xsize(7) scale(0.8)
 	
 **Build Table wirth summary statistics and correlations
 
