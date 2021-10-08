@@ -78,8 +78,10 @@ quietly {
     log close
 }
 
-**set up collection a for export to tables
-collect create a
+**set up collection a2 for export to tables
+collect create a1
+**set up collection a2 for export to tables
+collect create a2
 **set up collection b for export to tables
 collect create b
 **set up collection c for export to tables
@@ -136,19 +138,58 @@ di paretoprob
 sca VaR_0_25 = x151 * (150/`r(N)'*0.25)^alphainv
 di VaR_0_25
 
-collect get r(x151) r(alphainv) r(alpha_hat) r(c_hat) r(normprob) ///
-		r(normcheck) r(paretoprob)	r(VaR_0_25) r(u), name(a)
+*collect get r(x151) r(alphainv) r(alpha_hat) r(c_hat) r(normprob) ///
+		*r(normcheck) r(paretoprob)	r(VaR_0_25) r(u), name(a)
 		
 ***STILL TO DO: COMPARE MAGNITUDES OF LIKELIHOODS
 
-**Build Table with results
+*create vars with values of scalars for tables
+foreach x in x151 alphainv alpha_hat c_hat normprob normcheck paretoprob {
+	gen `x'_est = scalar(`x')
+	}
 
-qui table (result rowname) (colname), name(a) ///
-statistic(mean bny_log_return bofa_log_return citi_log_return portf_return) ///
-statistic(sd bny_log_return bofa_log_return citi_log_return portf_return) ///
-statistic(var bny_log_return bofa_log_return citi_log_return portf_return) ///
-command(r(C): correlate bny_log_return bofa_log_return citi_log_return) ///
-nformat(%8.2g)
+**Build Table with Tail sum stats
+qui table (result colname) (rowname), name(a1) ///
+command(sum citi_log_loss_150) nformat(%12.2g) 
+*adjust table
+collect dims
+collect label list result
+collect label list statistics
+*adjust labels
+collect label levels colname citi_log_loss_150 "Right Tail of Loss Distr.",modify
+*hide stat headers
+collect style header statcmd, level(hide)
+collect style column, width(equal)
+**export table
+collect export "Sumstats right tail.tex", tableonly name(a1) replace
+
+
+**Build Table with results
+qui table , name(a2) ///
+statistic(mean x151_est normprob_est normcheck_est alphainv_est alpha_hat_est ///
+		c_hat_est  paretoprob_est) ///
+		nformat(%12.2g)
+*adjust table
+collect dims
+collect label list result
+collect label list var
+*adjust labels
+collect label levels var x151_est "151st largest loss" ,modify
+collect label levels var alphainv_est "1/ alpha hat",modify
+collect label levels var alpha_hat_est "alpha hat",modify
+collect label levels var c_hat_est "C hat",modify
+collect label levels var normprob_est ///
+ "Prob. that Portf. loss > 25% (Normal) (stdized)" ,modify
+collect label levels var normprob_est ///
+ "Prob. that Portf. loss > 25% (Normal) (not stdized)" ,modify
+collect label levels var paretoprob_est ///
+ "Prob. that Portf. loss > 25% (Pareto)" ,modify
+*hide stat headers
+collect style header statcmd, level(hide)
+collect style column, width(equal)
+
+**export table
+collect export "Parameters and Probabilities.tex", tableonly name(a2) replace
 
 ****************
 *******c********
@@ -203,21 +244,20 @@ sort date
 **make descriptive TS Graph of stock prices
 local grtitle = "Bank stock prices"
 tw tsline bny citi bofa,  ///
-title(`grtitle', color(black) span) ///
+title(`grtitle', color(black) size(medlarge) span ) ///
 	lcolor(%60 %60 %60) ytitle("Share Price in USD", ///
-	orientation(vertical) angle(-90)) ///
+	orientation(vertical) angle(-90) size(medium)) ///
 	legend(position(6))
-	gr save "stockprices.tex", replace
+	
 	gr export "stockprices.png", replace
 	gr close
 
 local grtitle = "Log Bank stock returns"
 tw tsline bny_log_return citi_log_return bofa_log_return,  ///
-	title(`grtitle', color(black) span) ///
-	lcolor(%60 %60 %60) ytitle("Share Price in USD", ///
-	orientation(vertical) angle(-90)) ///
+	title(`grtitle', color(black) size(medlarge) span ) ///
+	lcolor(%60 %60 %60) ytitle("Logarithmic Returns", ///
+	orientation(vertical) angle(-90) size(medium)) ///
 	legend(position(6))
-	gr save "logstockreturn.tex", replace
 	gr export "logstockreturn.png", replace
 	gr close
 	
@@ -236,21 +276,16 @@ collect label list colname
 *adjust labels
 collect label levels colname bny_log_return "Log Ret. BNY", modify
 collect label levels rowname bny_log_return "Log Ret. BNY", modify
-
 collect label levels colname bofa_log_return "Log Ret. BofA", modify
 collect label levels rowname bofa_log_return "Log Ret. BofA", modify
-
 collect label levels colname citi_log_return "Log Ret. Citi", modify
 collect label levels rowname citi_log_return "Log Ret. Citi", modify
-
 *hide stat headers
 collect style header statcmd, level(hide)
 collect style column, width(equal)
+**export table
+collect export "descriptives_corr.tex", tableonly name(b) replace
 
-collect export descriptives_corr.tex, name(b) replace
-
-
-	
 
 
 ****END
