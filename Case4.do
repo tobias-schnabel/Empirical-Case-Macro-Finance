@@ -184,7 +184,7 @@ collect label levels var alpha_hat_est "alpha hat",modify
 collect label levels var c_hat_est "C hat",modify
 collect label levels var normprob_est ///
  "Prob. that Portf. loss > 25% (Normal) (stdized)" ,modify
-collect label levels var normprob_est ///
+collect label levels var normcheck_est ///
  "Prob. that Portf. loss > 25% (Normal) (not stdized)" ,modify
 collect label levels var paretoprob_est ///
  "Prob. that Portf. loss > 25% (Pareto)" ,modify
@@ -329,6 +329,8 @@ collect label levels colname bofa_log_return "Log Ret. BofA", modify
 collect label levels rowname bofa_log_return "Log Ret. BofA", modify
 collect label levels colname citi_log_return "Log Ret. Citi", modify
 collect label levels rowname citi_log_return "Log Ret. Citi", modify
+collect label levels colname portf_return "Log Ret. Portfolio", modify
+collect label levels rowname portf_return "Log Ret. Portfolio", modify
 *hide stat headers
 collect style header statcmd, level(hide)
 collect style column, width(equal)
