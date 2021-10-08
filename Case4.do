@@ -166,7 +166,7 @@ di VaR_portf
 di %20.3f 1000000/VaR_portf
 
 sca dir
-/*
+
 
 ****************
 *******b********
@@ -177,13 +177,23 @@ local grtitle = "Bank stock prices"
 tw tsline BNY Citi BofA, nodraw ///
 title(`grtitle', color(black) span) ///
 	lcolor(%60 %60 %60)
-	gr save "stockprices.tex", replace
+	gr save "stockprices.eps", replace
 
 local grtitle = "Log Bank stock returns"
 tw tsline BNY_log_return Citi_log_return BofA_log_return, nodraw ///
 	title(`grtitle', color(black) span) ///
 	lcolor(%60 %60 %60)
-	gr save "logstockprices.tex", replace
+	gr save "logstockreturn.eps", replace
+	
+**Get Sumstats
+quietly {
+	sum bny_log_return bofa_log_return citi_log_return portf_return
+	corr bny_log_return bofa_log_return citi_log_return
+	pw corr bny_log_return bofa_log_return citi_log_return
+}
+
+
+
 	
 
 
