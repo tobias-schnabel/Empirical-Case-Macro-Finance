@@ -323,14 +323,14 @@ collect dims
 collect label list result
 collect label list colname
 *adjust labels
-collect label levels colname bny_log_return "Log Ret. BNY", modify
-collect label levels rowname bny_log_return "Log Ret. BNY", modify
-collect label levels colname bofa_log_return "Log Ret. BofA", modify
-collect label levels rowname bofa_log_return "Log Ret. BofA", modify
-collect label levels colname citi_log_return "Log Ret. Citi", modify
-collect label levels rowname citi_log_return "Log Ret. Citi", modify
-collect label levels colname portf_return "Log Ret. Portfolio", modify
-collect label levels rowname portf_return "Log Ret. Portfolio", modify
+collect label levels colname bny_log_return "BNY", modify
+collect label levels rowname bny_log_return "BNY", modify
+collect label levels colname bofa_log_return "BofA", modify
+collect label levels rowname bofa_log_return "BofA", modify
+collect label levels colname citi_log_return "Citi", modify
+collect label levels rowname citi_log_return "Citi", modify
+collect label levels colname portf_return "Portfolio", modify
+collect label levels rowname portf_return "Portfolio", modify
 collect label levels result C "Correlation Matrix", modify 
 *hide stat headers
 collect style header statcmd, level(hide)
