@@ -244,7 +244,7 @@ sort date
 **make descriptive TS Graph of stock prices
 local grtitle = "Bank stock prices"
 tw tsline bny citi bofa,  ///
-title(`grtitle', color(black) size(medlarge) span ) ///
+title(, color(black) size(medlarge) span ) ///
 	lcolor(%60 %60 %60) ytitle("Share Price in USD", ///
 	orientation(vertical) angle(-90) size(medium)) ///
 	legend(position(6))
@@ -254,7 +254,7 @@ title(`grtitle', color(black) size(medlarge) span ) ///
 
 local grtitle = "Log Bank stock returns"
 tw tsline bny_log_return citi_log_return bofa_log_return,  ///
-	title(`grtitle', color(black) size(medlarge) span ) ///
+	title(, color(black) size(medlarge) span ) ///
 	lcolor(%60 %60 %60) ytitle("Logarithmic Returns", ///
 	orientation(vertical) angle(-90) size(medium)) ///
 	legend(position(6))
