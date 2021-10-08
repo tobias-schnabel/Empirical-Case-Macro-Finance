@@ -331,6 +331,7 @@ collect label levels colname citi_log_return "Log Ret. Citi", modify
 collect label levels rowname citi_log_return "Log Ret. Citi", modify
 collect label levels colname portf_return "Log Ret. Portfolio", modify
 collect label levels rowname portf_return "Log Ret. Portfolio", modify
+collect label levels result C "Correlation Matrix", modify 
 *hide stat headers
 collect style header statcmd, level(hide)
 collect style column, width(equal)
