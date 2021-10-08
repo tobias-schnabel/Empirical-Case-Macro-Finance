@@ -72,7 +72,7 @@ gen portf_price = 1/3*bny + 1/3*citi + 1/3*bofa
 gen portf_return = ln(portf_price/L.portf_price)
 gen portf_loss = -portf_return
 
-la var portf_return "Portfolio Return"
+la var portf_return "Portfolio"
 
 *export codebook and time series status report
 quietly {
@@ -278,27 +278,27 @@ tw tsline portf_return SP500_log_return,  ///
 	gr close
 
 ***Build and combine 4 graphs of correlations
-tw scat portf_return SP500_log_return, nodraw ///
+tw scat portf_return SP500_log_return, nodraw  ///
 	graphregion(margin(1 1 1 1)) name(gr4, replace) ///
-	mcolor(%60) ytitle(, j(center) alignment(middle) ///
+	mcolor("214 39 40"%50) ytitle(, j(center) alignment(middle) ///
 	orientation(vertical) angle(-90) size(medium) ) ///
 	yscale(titlegap(*-24))
 	
 tw scat bny_log_return bofa_log_return, nodraw ///
 	graphregion(margin(1 1 1 1)) name(gr1, replace) ///
-	mcolor(%60) ytitle(, j(center) alignment(middle) ///
+	mcolor("31 119 180"%50) ytitle(, j(center) alignment(middle) ///
 	orientation(vertical) angle(-90) size(medium)) ///
 	yscale(titlegap(*-5))
 	
 tw scat  bny_log_return citi_log_return, nodraw ///
 	graphregion(margin(1 1 1 1)) name(gr2, replace) ///
-	mcolor(%60) ytitle(, j(center) alignment(middle) ///
+	mcolor("255 127 14"%50) ytitle(, j(center) alignment(middle) ///
 	orientation(vertical) angle(-90) size(medium)) ///
 	yscale(titlegap(*-5))
 	
 tw scat  citi_log_return bofa_log_return , nodraw ///
 	graphregion(margin(1 1 1 1)) name(gr3, replace) ///
-	mcolor(%60) ytitle(, j(center) alignment(middle) ///
+	mcolor("44 160 44"%50) ytitle(, j(center) alignment(middle) ///
 	orientation(vertical) angle(-90) size(medium)) ///
 	yscale(titlegap(*-32))
 	
@@ -306,12 +306,9 @@ gr combine gr1 gr2 gr3 gr4,  ///
 	rows(2) title(, color(black) nobox fcolor() ) subtitle(, nobox) ///
 	caption(, nobox)  name(corrs, replace) 
 	
-	 altshrink ///
-	graphregion(margin(zero) fcolor(white) ///
-	lcolor(white%0) lpattern(blank) ifcolor(white) ilcolor(white%0) ///
-	ilpattern(blank)) 
-	
-	*xsize(7) scale(0.8)
+gr export "4waycorr.png", replace
+gr close
+gr drop _all
 	
 **Build Table wirth summary statistics and correlations
 
