@@ -168,8 +168,9 @@ collect label levels colname citi_log_loss_150 "Right Tail of Loss Distr.",modif
 collect style header statcmd, level(hide)
 collect style column, width(equal)
 **export table
-collect export "${tables}/Sumstats right tail.tex", tableonly name(a1) replace
-
+cd "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/tables"
+collect export "$Sumstats right tail.tex", tableonly name(a1) replace
+cd "${wd}"
 
 **Build Table with results
 qui table , name(a2) ///
@@ -196,8 +197,9 @@ collect style header statcmd, level(hide)
 collect style column, width(equal)
 
 **export table
-collect export "${tables}/Parameters and Probabilities.tex", tableonly name(a2) replace
-
+cd "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/tables"
+collect export "Parameters and Probabilities.tex", tableonly name(a2) replace
+cd "${wd}"
 
 ****************
 *******c********
@@ -271,11 +273,13 @@ collect style header statcmd, level(hide)
 collect style column, width(equal)
 
 **export table
-collect export "${tables}/portf_Parameters and Probabilities.tex", tableonly name(b) replace
-
+cd "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/tables"
+collect export "portf_Parameters and Probabilities.tex", tableonly name(b) replace
+cd "${wd}"
 ****************
 *******b********
 ****************
+cd "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/images"
 sort date
 **make descriptive TS Graph of stock prices
 local grtitle = "Bank stock prices"
@@ -285,7 +289,7 @@ title(, color(black) size(medlarge) span ) ///
 	orientation(vertical) angle(-90) size(medium)) ///
 	legend(position(6) symplacement(s)) graphregion(margin(1 5 1 1))
 	
-	gr export "{figs}/stockprices.png", replace
+	gr export "stockprices.png", replace
 	gr close
 
 local grtitle = "Log Bank stock returns"
@@ -295,7 +299,7 @@ tw tsline bny_log_return citi_log_return bofa_log_return,  ///
 	orientation(vertical) angle(-90) size(medium)) ///
 	legend(position(6)  symplacement(s)) graphregion(margin(1 5 1 1))
 	
-	gr export "${figs}/logstockreturn.png", replace
+	gr export "logstockreturn.png", replace
 	gr close
 	
 local grtitle = "Log Portfolio returns"
@@ -306,7 +310,7 @@ tw tsline portf_return SP500_log_return,  ///
 	legend(position(6) symplacement(s) label(1 "Portolio Return")) ///
 	graphregion(margin(1 5 1 1))
 	
-	gr export "{figs}/logportfreturn.png", replace
+	gr export "pogportfreturn.png", replace
 	gr close
 
 ***Build and combine 4 graphs of correlations
@@ -338,10 +342,10 @@ gr combine gr1 gr2 gr3 gr4,  ///
 	rows(2) title(, color(black) nobox fcolor() ) subtitle(, nobox) ///
 	caption(, nobox)  name(corrs, replace) 
 	
-gr export "{figs}/4waycorr.png", replace
+gr export "4waycorr.png", replace
 gr close
 gr drop _all
-	
+cd "${wd}"
 **Build Table wirth summary statistics and correlations of LOG
 
 qui table (result rowname) (colname), name(c) ///
@@ -368,7 +372,9 @@ collect label levels result C "Correlation Matrix", modify
 collect style header statcmd, level(hide)
 collect style column, width(equal)
 **export table
-collect export "${tables}/log_descriptives_corr.tex", tableonly name(c) replace
+cd "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/tables"
+collect export "log_descriptives_corr.tex", tableonly name(c) replace
+cd "${wd}"
 
 
 **Build Table wirth summary statistics and correlations
@@ -399,8 +405,9 @@ collect label levels result C "Correlation Matrix", modify
 collect style header statcmd, level(hide)
 collect style column, width(equal)
 **export table
-collect export "${tables}/data_descriptives.tex", tableonly name(general) replace
-
+cd "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/tables"
+collect export "data_descriptives.tex", tableonly name(general) replace
+cd "${wd}"
 /*
 */
 
