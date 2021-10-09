@@ -101,13 +101,10 @@ qui sum citi_log_return
 gen citi_log_ret_std = ((citi_log_return-`r(mean)')/`r(sd)')
 qui sum citi_log_ret_std
 sca normprob = normalden(citi_log_ret_std<=-0.25,0,1) - normalden(citi_log_ret_std==`r(min)')
-dis %20.0e normprob
 ******
 qui sum citi_log_loss
 sca normcheck =normalden(citi_log_loss==0.25, `r(mean)', `r(sd)') - normalden(citi_log_loss== `r(mean)', `r(mean)', `r(sd)')
-dis %20.0e normcheck
 
-*7.42156E-22
 **a(ii)
 sort citi_log_return //low to high so loss var is sorted high to low now
 gen index = _n
@@ -122,7 +119,6 @@ sca x151 = `r(mean)'
 di x151
 drop citi_l_l_151
 
-
 ***EQ 21
 *gen sum150 = sum(ln(citi_log_loss_150/x151)), after(citi_log_loss)
 gen sum_arg = ln(citi_log_loss_150/x151), after(citi_log_loss)
@@ -130,7 +126,6 @@ egen sum_total = total(sum_arg)
 qui sum sum_total, meanonly
 sca alphainv = 1/150* `r(mean)'
 sca alpha_hat = 1/alphainv
-dis alpha_hat
 
 ***EQ 22
 qui sum index
@@ -154,58 +149,10 @@ sca normprob_portf = normalden(portf_return_std<=-0.25,0,1) - normalden(portf_re
 foreach x in x151 alphainv alpha_hat c_hat normprob normcheck paretoprob VaR_citi {
 	gen `x'_est = scalar(`x')
 	}
-
-**Build Table with Tail sum stats
-qui table (result colname) (rowname), name(a1) ///
-command(sum citi_log_loss_150) nformat(%12.2g) 
-*adjust table
-collect dims
-collect label list result
-collect label list statistics
-*adjust labels
-collect label levels colname citi_log_loss_150 "Right Tail of Loss Distr.",modify
-*hide stat headers
-collect style header statcmd, level(hide)
-collect style column, width(equal)
-**export table
-cd "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/tables"
-collect export "Sumstats right tail.tex", tableonly name(a1) replace
-cd "${wd}"
-
-**Build Table with results
-qui table , name(a2) ///
-statistic(mean x151_est normprob_est normcheck_est alphainv_est alpha_hat_est ///
-		c_hat_est  paretoprob_est VaR_citi_est) ///
-		nformat(%12.2g)
-*adjust table
-collect dims
-collect label list result
-collect label list var
-*adjust labels
-collect label levels var x151_est "151st largest loss" ,modify
-collect label levels var alphainv_est "1/ alpha hat",modify
-collect label levels var alpha_hat_est "alpha hat",modify
-collect label levels var c_hat_est "C hat",modify
-collect label levels var VaR_citi_est "Citi VaR",modify
-collect label levels var normprob_est ///
- "Prob. that Citi loss > 25% (Normal) (stdized)" ,modify
-collect label levels var normcheck_est ///
- "Prob. that Citi loss > 25% (Normal) (not stdized)" ,modify
-collect label levels var paretoprob_est ///
- "Prob. that Citi loss > 25% (Pareto)" ,modify
-*hide stat headers
-collect style header statcmd, level(hide)
-collect style column, width(equal)
-
-**export table
-cd "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/tables"
-collect export "Parameters and Probabilities.tex", tableonly name(a2) replace
-cd "${wd}"
-
+	
 ****************
 *******c********
 ****************
-*sca I = 1000000/VaR_0_25
 sort portf_return
 gen index2 = _n
 
@@ -222,14 +169,11 @@ drop portf_l_151
 
 
 ***EQ 21
-*gen sum150 = sum(ln(portf_loss_150/x151)), after(port_loss)
 gen sum_arg_portf = ln(portf_loss_150/x151_portf), after(portf_loss)
 egen sum_total_portf = total(sum_arg_portf)
 qui sum sum_total_portf, meanonly
 sca alphainv_portf = 1/150* `r(mean)'
 sca alpha_hat_portf = 1/alphainv_portf
-dis alpha_hat_portf
-
 
 ***EQ 22
 qui sum index2
@@ -242,42 +186,12 @@ di paretoprob_portf
 **EQ 23
 sca VaR_portf = x151 * (150/`r(N)'*0.001)^alphainv
 di VaR_portf
-di %20.3f 1000000/VaR_portf
 
-*collect get r() r() r() ///
- *r()  r() r(), name(b)
- 
 *create vars with values of scalars for tables
 foreach x in x151_portf alphainv_portf alpha_hat_portf c_hat_portf normprob_portf paretoprob_portf VaR_portf {
 	gen `x'_est = scalar(`x')
 	}
 
-**Build Table with results
-qui table , name(b) ///
-statistic(mean x151_portf_est normprob_portf_est alphainv_portf_est alpha_hat_portf_est ///
-	c_hat_portf_est  paretoprob_portf_est VaR_portf_est) ///
-	nformat(%12.2g)
-*adjust table
-collect dims
-collect label list result
-collect label list var
-*adjust labels
-collect label levels var x151_portf_est "151st largest loss" ,modify
-collect label levels var alphainv_portf_est "1/ alpha hat",modify
-collect label levels var alpha_hat_portf_est "alpha hat",modify
-collect label levels var c_hat_portf_est "C hat",modify
-collect label levels var normprob_portf_est  "Prob. that Portf. loss > 25% (Normal) (stdized)" ,modify
-collect label levels var paretoprob_portf_est ///
-collect label levels var VaR_portf_est "Portfolio VaR",modify
- "Prob. that Portf. loss > 25% (Pareto)" ,modify
-*hide stat headers
-collect style header statcmd, level(hide)
-collect style column, width(equal)
-
-**export table
-cd "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/tables"
-collect export "portf_Parameters and Probabilities.tex", tableonly name(b) replace
-cd "${wd}"
 ****************
 *******b********
 ****************
@@ -316,7 +230,7 @@ tw tsline portf_return SP500_log_return,  ///
 	gr close
 
 ***Build and combine 4 graphs of correlations
-tw scat portf_return SP500_log_return, nodraw  ///
+tw scat portf_return citi_log_return, nodraw  ///
 	graphregion(margin(1 1 1 1)) name(gr4, replace) ///
 	mcolor("214 39 40"%50) ytitle(, j(center) alignment(middle) ///
 	orientation(vertical) angle(-90) size(medium) ) ///
@@ -348,13 +262,85 @@ gr export "4waycorr.png", replace
 gr close
 gr drop _all
 cd "${wd}"
+
+	
+**********************************************************************
+********************************TABLES********************************
+**********************************************************************
+cd "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/tables"
+
+**Build Table with Citi Tail sum stats
+qui table (result colname) (rowname), name(a1) ///
+command(sum citi_log_loss_150) nformat(%12.2g) 
+*adjust table
+collect dims
+collect label list result
+collect label list statistics
+*adjust labels
+collect label levels colname citi_log_loss_150 "Right Tail of Loss Distr.",modify
+*hide stat headers
+collect style header statcmd, level(hide)
+collect style column, width(equal)
+**export table
+collect export "Sumstats right tail.tex", tableonly name(a1) replace
+
+**Build Table with results
+qui table , name(a2) ///
+statistic(mean x151_est normprob_est normcheck_est alphainv_est alpha_hat_est ///
+		c_hat_est  paretoprob_est VaR_citi_est) ///
+		nformat(%12.2g)
+*adjust table
+collect dims
+collect label list result
+collect label list var
+*adjust labels
+collect label levels var x151_est "151st largest loss" ,modify
+collect label levels var alphainv_est "1/ alpha hat",modify
+collect label levels var alpha_hat_est "alpha hat",modify
+collect label levels var c_hat_est "C hat",modify
+collect label levels var VaR_citi_est "Citi VaR",modify
+collect label levels var normprob_est ///
+ "Prob. that Citi loss > 25% (Normal) (stdized)" ,modify
+collect label levels var normcheck_est ///
+ "Prob. that Citi loss > 25% (Normal) (not stdized)" ,modify
+collect label levels var paretoprob_est ///
+ "Prob. that Citi loss > 25% (Pareto)" ,modify
+*hide stat headers
+collect style header statcmd, level(hide)
+collect style column, width(equal)
+**export table
+collect export "Parameters and Probabilities.tex", tableonly name(a2) replace
+
+**Build Table with portf. results
+qui table , name(b) ///
+statistic(mean x151_portf_est normprob_portf_est alphainv_portf_est alpha_hat_portf_est ///
+	c_hat_portf_est  paretoprob_portf_est VaR_portf_est) ///
+	nformat(%12.2g)
+*adjust table
+collect dims
+collect label list result
+collect label list var
+*adjust labels
+collect label levels var x151_portf_est "151st largest loss" ,modify
+collect label levels var alphainv_portf_est "1/ alpha hat",modify
+collect label levels var alpha_hat_portf_est "alpha hat",modify
+collect label levels var c_hat_portf_est "C hat",modify
+collect label levels var normprob_portf_est  "Prob. that Portf. loss > 25% (Normal) (stdized)" ,modify
+collect label levels var paretoprob_portf_est  "Prob. that Portf. loss > 25% (Pareto)" ,modify
+collect label levels var VaR_portf_est "Portfolio VaR",modify
+*hide stat headers
+collect style header statcmd, level(hide)
+collect style column, width(equal)
+**export table
+collect export "portf_Parameters and Probabilities.tex", tableonly name(b) replace
+
 **Build Table wirth summary statistics and correlations of LOG
 
 qui table (result rowname) (colname), name(c) ///
 statistic(mean bny_log_return bofa_log_return citi_log_return portf_return) ///
 statistic(sd bny_log_return bofa_log_return citi_log_return portf_return) ///
 statistic(count bny_log_return bofa_log_return citi_log_return portf_return) ///
-command(r(C): correlate bny_log_return bofa_log_return citi_log_return) ///
+command(r(C): correlate bny_log_return bofa_log_return citi_log_return portf_return) ///
 nformat(%8.2g)
 
 collect dims
@@ -374,10 +360,7 @@ collect label levels result C "Correlation Matrix", modify
 collect style header statcmd, level(hide)
 collect style column, width(equal)
 **export table
-cd "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/tables"
 collect export "log_descriptives_corr.tex", tableonly name(c) replace
-cd "${wd}"
-
 
 **Build Table wirth summary statistics and correlations
 
@@ -407,13 +390,10 @@ collect label levels result C "Correlation Matrix", modify
 collect style header statcmd, level(hide)
 collect style column, width(equal)
 **export table
-cd "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/tables"
 collect export "data_descriptives.tex", tableonly name(general) replace
-cd "${wd}"
-/*
-*/
 
 ****END
-translate "/Users/ts/Git/Empirical-Case-Macro-Finance/Case4.do" ///
+translate "/Users/ts/Git/Empirical-Case-Macro-Finance/CaseReport.do" ///
 "Dofile.pdf", t(txt2pdf) replace
 copy "Dofile.pdf" "${wd}/output/Dofile.pdf", replace
+
