@@ -22,7 +22,8 @@ set scheme white_tableau
 
 *set wd
 global wd "/Users/ts/Library/Mobile Documents/com~apple~CloudDocs/Uni/UM/Year 2/Macro and Finance/Empirical Case"
-
+global figs "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/images"
+global tables "/Users/ts/Dropbox/Apps/Overleaf/Empirical Project Macro&Finance/tables"
 cd "${wd}"
 
 *create duplicate of raw data
@@ -139,16 +140,18 @@ sca u = 0.25
 sca paretoprob = c_hat * (u ^-alpha_hat)
 di paretoprob
 **EQ 23
-sca VaR_0_25 = x151 * (150/`r(N)'*0.25)^alphainv
-di VaR_0_25
+sca VaR_citi = x151 * (150/`r(N)'*0.001)^alphainv
 
-*collect get r(x151) r(alphainv) r(alpha_hat) r(c_hat) r(normprob) ///
-		*r(normcheck) r(paretoprob)	r(VaR_0_25) r(u), name(a)
-		
-***STILL TO DO: COMPARE MAGNITUDES OF LIKELIHOODS
+****estimate likelihood using normal distr
+qui sum portf_return
+*gen standardized var
+gen portf_return_std = ((portf_return-`r(mean)')/`r(sd)')
+qui sum portf_return_std
+sca normprob_portf = normalden(portf_return_std<=-0.25,0,1) - normalden(portf_return_std==`r(min)')
+
 
 *create vars with values of scalars for tables
-foreach x in x151 alphainv alpha_hat c_hat normprob normcheck paretoprob {
+foreach x in x151 alphainv alpha_hat c_hat normprob normcheck paretoprob VaR_citi {
 	gen `x'_est = scalar(`x')
 	}
 
@@ -165,13 +168,13 @@ collect label levels colname citi_log_loss_150 "Right Tail of Loss Distr.",modif
 collect style header statcmd, level(hide)
 collect style column, width(equal)
 **export table
-collect export "Sumstats right tail.tex", tableonly name(a1) replace
+collect export "${tables}/Sumstats right tail.tex", tableonly name(a1) replace
 
 
 **Build Table with results
 qui table , name(a2) ///
 statistic(mean x151_est normprob_est normcheck_est alphainv_est alpha_hat_est ///
-		c_hat_est  paretoprob_est) ///
+		c_hat_est  paretoprob_est VaR_citi_est) ///
 		nformat(%12.2g)
 *adjust table
 collect dims
@@ -183,17 +186,18 @@ collect label levels var alphainv_est "1/ alpha hat",modify
 collect label levels var alpha_hat_est "alpha hat",modify
 collect label levels var c_hat_est "C hat",modify
 collect label levels var normprob_est ///
- "Prob. that Portf. loss > 25% (Normal) (stdized)" ,modify
+ "Prob. that Citi loss > 25% (Normal) (stdized)" ,modify
 collect label levels var normcheck_est ///
- "Prob. that Portf. loss > 25% (Normal) (not stdized)" ,modify
+ "Prob. that Citi loss > 25% (Normal) (not stdized)" ,modify
 collect label levels var paretoprob_est ///
- "Prob. that Portf. loss > 25% (Pareto)" ,modify
+ "Prob. that Citi loss > 25% (Pareto)" ,modify
 *hide stat headers
 collect style header statcmd, level(hide)
 collect style column, width(equal)
 
 **export table
-collect export "Parameters and Probabilities.tex", tableonly name(a2) replace
+collect export "${tables}/Parameters and Probabilities.tex", tableonly name(a2) replace
+
 
 ****************
 *******c********
@@ -237,9 +241,37 @@ sca VaR_portf = x151 * (150/`r(N)'*0.001)^alphainv
 di VaR_portf
 di %20.3f 1000000/VaR_portf
 
-collect get r(x151_portf) r(alphainv_portf) r(alpha_hat_portf) ///
- r(c_hat_portf)  r(paretoprob_portf) r(VaR_portf), name()
+*collect get r() r() r() ///
+ *r()  r() r(), name(b)
+ 
+*create vars with values of scalars for tables
+foreach x in x151_portf alphainv_portf alpha_hat_portf c_hat_portf normprob_portf paretoprob_portf VaR_portf {
+	gen `x'_est = scalar(`x')
+	}
 
+**Build Table with results
+qui table , name(b) ///
+statistic(mean x151_portf_est normprob_portf_est alphainv_portf_est alpha_hat_portf_est ///
+	c_hat_portf_est  paretoprob_portf_est VaR_portf_est) ///
+	nformat(%12.2g)
+*adjust table
+collect dims
+collect label list result
+collect label list var
+*adjust labels
+collect label levels var x151_portf_estest "151st largest loss" ,modify
+collect label levels var alphainv_portf_est_est "1/ alpha hat",modify
+collect label levels var alpha_hat_portf_est_est "alpha hat",modify
+collect label levels var c_hat_portf_est "C hat",modify
+collect label levels var normprob_portf_est  "Prob. that Portf. loss > 25% (Normal) (stdized)" ,modify
+collect label levels var paretoprob_portf_estest ///
+ "Prob. that Portf. loss > 25% (Pareto)" ,modify
+*hide stat headers
+collect style header statcmd, level(hide)
+collect style column, width(equal)
+
+**export table
+collect export "${tables}/portf_Parameters and Probabilities.tex", tableonly name(b) replace
 
 ****************
 *******b********
@@ -253,7 +285,7 @@ title(, color(black) size(medlarge) span ) ///
 	orientation(vertical) angle(-90) size(medium)) ///
 	legend(position(6) symplacement(s)) graphregion(margin(1 5 1 1))
 	
-	gr export "stockprices.png", replace
+	gr export "{figs}/stockprices.png", replace
 	gr close
 
 local grtitle = "Log Bank stock returns"
@@ -263,7 +295,7 @@ tw tsline bny_log_return citi_log_return bofa_log_return,  ///
 	orientation(vertical) angle(-90) size(medium)) ///
 	legend(position(6)  symplacement(s)) graphregion(margin(1 5 1 1))
 	
-	gr export "logstockreturn.png", replace
+	gr export "${figs}/logstockreturn.png", replace
 	gr close
 	
 local grtitle = "Log Portfolio returns"
@@ -274,7 +306,7 @@ tw tsline portf_return SP500_log_return,  ///
 	legend(position(6) symplacement(s) label(1 "Portolio Return")) ///
 	graphregion(margin(1 5 1 1))
 	
-	gr export "logportfreturn.png", replace
+	gr export "{figs}/logportfreturn.png", replace
 	gr close
 
 ***Build and combine 4 graphs of correlations
@@ -306,13 +338,13 @@ gr combine gr1 gr2 gr3 gr4,  ///
 	rows(2) title(, color(black) nobox fcolor() ) subtitle(, nobox) ///
 	caption(, nobox)  name(corrs, replace) 
 	
-gr export "4waycorr.png", replace
+gr export "{figs}/4waycorr.png", replace
 gr close
 gr drop _all
 	
 **Build Table wirth summary statistics and correlations of LOG
 
-qui table (result rowname) (colname), name(b) ///
+qui table (result rowname) (colname), name(c) ///
 statistic(mean bny_log_return bofa_log_return citi_log_return portf_return) ///
 statistic(sd bny_log_return bofa_log_return citi_log_return portf_return) ///
 statistic(count bny_log_return bofa_log_return citi_log_return portf_return) ///
@@ -336,7 +368,7 @@ collect label levels result C "Correlation Matrix", modify
 collect style header statcmd, level(hide)
 collect style column, width(equal)
 **export table
-collect export "log_descriptives_corr.tex", tableonly name(b) replace
+collect export "${tables}/log_descriptives_corr.tex", tableonly name(c) replace
 
 
 **Build Table wirth summary statistics and correlations
@@ -367,7 +399,7 @@ collect label levels result C "Correlation Matrix", modify
 collect style header statcmd, level(hide)
 collect style column, width(equal)
 **export table
-collect export "data_descriptives.tex", tableonly name(general) replace
+collect export "${tables}/data_descriptives.tex", tableonly name(general) replace
 
 /*
 */
