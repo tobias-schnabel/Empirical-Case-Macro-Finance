@@ -310,12 +310,12 @@ gr export "4waycorr.png", replace
 gr close
 gr drop _all
 	
-**Build Table wirth summary statistics and correlations
+**Build Table wirth summary statistics and correlations of LOG
 
 qui table (result rowname) (colname), name(b) ///
 statistic(mean bny_log_return bofa_log_return citi_log_return portf_return) ///
 statistic(sd bny_log_return bofa_log_return citi_log_return portf_return) ///
-statistic(var bny_log_return bofa_log_return citi_log_return portf_return) ///
+statistic(count bny_log_return bofa_log_return citi_log_return portf_return) ///
 command(r(C): correlate bny_log_return bofa_log_return citi_log_return) ///
 nformat(%8.2g)
 
@@ -336,9 +336,41 @@ collect label levels result C "Correlation Matrix", modify
 collect style header statcmd, level(hide)
 collect style column, width(equal)
 **export table
-collect export "descriptives_corr.tex", tableonly name(b) replace
+collect export "log_descriptives_corr.tex", tableonly name(b) replace
 
 
+**Build Table wirth summary statistics and correlations
+
+qui table (result rowname) (colname), name(general) ///
+statistic(mean bny bofa citi SP500) ///
+statistic(sd bny bofa citi SP500) ///
+statistic(min bny bofa citi SP500) ///
+statistic(max bny bofa citi SP500) ///
+statistic(count bny bofa citi SP500) ///
+command(r(C): correlate bny bofa citi SP500) ///
+nformat(%8.2g)
+
+collect dims
+collect label list result
+collect label list colname
+*adjust labels
+collect label levels colname bny "BNY", modify
+collect label levels rowname bny "BNY", modify
+collect label levels colname bofa "BofA", modify
+collect label levels rowname bofa "BofA", modify
+collect label levels colname citi "Citi", modify
+collect label levels rowname citi "Citi", modify
+collect label levels colname SP500 "S&P 500", modify
+collect label levels rowname SP500 "S&P 500", modify
+collect label levels result C "Correlation Matrix", modify 
+*hide stat headers
+collect style header statcmd, level(hide)
+collect style column, width(equal)
+**export table
+collect export "data_descriptives.tex", tableonly name(general) replace
+
+/*
+*/
 
 ****END
 translate "/Users/ts/Git/Empirical-Case-Macro-Finance/Case4.do" ///
