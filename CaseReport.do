@@ -3,9 +3,9 @@ version 17
 set more off
 cap log close
 
-graph set eps fontface "Latin Modern Roman"
+graph set window fontface "Latin Modern Roman"
 
-cls
+
 /*!!requires following packages: 
 
 net install cleanplots, from("https://tdmize.github.io/data/cleanplots")
@@ -226,7 +226,7 @@ tw tsline portf_return SP500_log_return,  ///
 	legend(position(6) symplacement(s) label(1 "Portolio Return")) ///
 	graphregion(margin(1 5 1 1))
 	
-	gr export "pogportfreturn.png", replace
+	gr export "logportfreturn.png", replace
 	gr close
 
 ***Build and combine 4 graphs of correlations
